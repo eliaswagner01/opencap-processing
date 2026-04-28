@@ -39,8 +39,8 @@ opensimADDir = os.path.join(baseDir, 'UtilsDynamicSimulations', 'OpenSimAD')
 sys.path.append(baseDir)
 sys.path.append(opensimADDir)
 
-from utilsOpenSimAD import processInputsOpenSimAD, plotResultsOpenSimAD
-from mainOpenSimAD import run_tracking
+from UtilsDynamicSimulations.OpenSimAD.utilsOpenSimAD import processInputsOpenSimAD, plotResultsOpenSimAD
+from UtilsDynamicSimulations.OpenSimAD.mainOpenSimAD import run_tracking
 
 # %% User inputs.
 '''
