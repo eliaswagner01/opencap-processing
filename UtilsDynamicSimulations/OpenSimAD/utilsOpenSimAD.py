@@ -1854,6 +1854,7 @@ def buildExternalFunction(filename, pathDCAD, CPP_DIR, nInputs,
 def get_preferred_generator(available_generators):
     # Define a list of preferred generators in order of preference
     preferred_generators = [
+        "Visual Studio 18 2026",
         "Visual Studio 17 2022",
         "Visual Studio 16 2019",
         "Visual Studio 15 2017"
