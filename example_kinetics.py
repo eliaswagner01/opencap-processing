@@ -34,10 +34,12 @@
 import os
 import sys
 
-baseDir = os.getcwd()
+baseDir = os.path.dirname(os.path.abspath(__file__))
 opensimADDir = os.path.join(baseDir, 'UtilsDynamicSimulations', 'OpenSimAD')
-sys.path.append(baseDir)
-sys.path.append(opensimADDir)
+if baseDir not in sys.path:
+    sys.path.append(baseDir)
+if opensimADDir not in sys.path:
+    sys.path.append(opensimADDir)
 
 from UtilsDynamicSimulations.OpenSimAD.utilsOpenSimAD import processInputsOpenSimAD, plotResultsOpenSimAD
 from UtilsDynamicSimulations.OpenSimAD.mainOpenSimAD import run_tracking

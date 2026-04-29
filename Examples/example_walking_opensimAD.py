@@ -45,17 +45,20 @@
 '''
 
 # %% Select the example you want to run.
-runTorqueDrivenProblem = True
-runMuscleDrivenProblem = False
+runTorqueDrivenProblem = False
+runMuscleDrivenProblem = True
 runComparison = False
 
 # %% Directories, paths, and imports. You should not need to change anything.
 import os
 import sys
-baseDir = os.path.join(os.getcwd(), '..')
-sys.path.append(baseDir)
+examplesDir = os.path.dirname(os.path.abspath(__file__))
+baseDir = os.path.dirname(examplesDir)
+if baseDir not in sys.path:
+    sys.path.append(baseDir)
 opensimADDir = os.path.join(baseDir, 'UtilsDynamicSimulations', 'OpenSimAD')
-sys.path.append(opensimADDir)
+if opensimADDir not in sys.path:
+    sys.path.append(opensimADDir)
 
 from utilsOpenSimAD import processInputsOpenSimAD, plotResultsOpenSimAD
 from mainOpenSimAD import run_tracking
