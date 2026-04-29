@@ -16,8 +16,13 @@
     limitations under the License.
 '''
 
-# TODO: This script is poorly documented and generates rough plots for 
-# debugging.
+"""Debug plotting helpers for OpenSimAD optimization variables.
+
+The functions in this module compare initial guesses or optimized trajectories
+against their lower and upper bounds. They are intentionally lightweight and
+produce quick diagnostic plots for spotting bound violations or unusual
+trajectory shapes during OpenSimAD problem setup and solution review.
+"""
 
 import numpy as np
 
