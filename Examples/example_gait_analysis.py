@@ -25,20 +25,21 @@
 
 import os
 import sys
-sys.path.append("../")
-sys.path.append("../ActivityAnalyses")
+exampleDir = os.path.dirname(os.path.abspath(__file__))
+baseDir = os.path.dirname(exampleDir)
+sys.path.append(baseDir)
+sys.path.append(os.path.join(baseDir, "ActivityAnalyses"))
 
-from gait_analysis import gait_analysis
+from ActivityAnalyses.gait_analysis import gait_analysis
 from utils import get_trial_id, download_trial
 from utilsPlotting import plot_dataframe_with_shading
 
 # %% Paths.
-baseDir = os.path.join(os.getcwd(), '..')
 dataFolder = os.path.join(baseDir, 'Data')
 
 # %% User-defined variables.
 # Select example: options are treadmill and overground.
-example = 'treadmill'
+example = 'overground'
 
 if example == 'treadmill':
     session_id = '4d5c3eb1-1a59-4ea1-9178-d3634610561c' # 1.25m/s
