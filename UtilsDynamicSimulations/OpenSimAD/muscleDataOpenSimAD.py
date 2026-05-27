@@ -199,6 +199,7 @@ def getPolynomialData(loadPolynomialData, pathModelFolder, modelName='',
             import opensim
             from joblib import Parallel, delayed
             import multiprocessing
+            import platform
             # Get training data from motion file.
             table = opensim.TimeSeriesTable(pathMotionFile4Polynomials)
             coordinates_table = list(table.getColumnLabels()) # w/ jointset/...
@@ -206,7 +207,10 @@ def getPolynomialData(loadPolynomialData, pathModelFolder, modelName='',
             pathModel = os.path.join(pathModelFolder, modelName + '.osim')
             # Set number of threads.
             if nThreads == None:
-                nThreads = multiprocessing.cpu_count()-2 # default
+                if platform.system() == 'Windows':
+                    nThreads = 1
+                else:
+                    nThreads = multiprocessing.cpu_count()-2 # default
             if nThreads < 1:
                 nThreads = 1
             elif nThreads > multiprocessing.cpu_count():
@@ -214,10 +218,14 @@ def getPolynomialData(loadPolynomialData, pathModelFolder, modelName='',
             # Generate muscle tendon lengths and moment arms (in parallel).
             slice_size = int(np.floor(data.shape[0]/nThreads))
             rest = data.shape[0] % nThreads
-            outputs = Parallel(n_jobs=nThreads)(
-                delayed(get_mtu_length_and_moment_arm)(
-                    pathModel, data[i*slice_size:(i+1)*slice_size,:], 
-                    coordinates_table, i) for i in range(nThreads))
+            if nThreads == 1:
+                outputs = [get_mtu_length_and_moment_arm(
+                    pathModel, data, coordinates_table, 0)]
+            else:
+                outputs = Parallel(n_jobs=nThreads)(
+                    delayed(get_mtu_length_and_moment_arm)(
+                        pathModel, data[i*slice_size:(i+1)*slice_size,:], 
+                        coordinates_table, i) for i in range(nThreads))
             if rest != 0:
                 output_last = get_mtu_length_and_moment_arm(
                     pathModel, data[-rest:,:], coordinates_table, 99)  
