@@ -27,13 +27,14 @@
         localSessionDir/OpenSimData/Model/<OpenSimModel>_scaled.osim
 
     The dynamic simulation results will be written locally under:
-        localSessionDir/OpenSimData/Dynamics
+        outputDataFolder/<session_id>/OpenSimData/Dynamics
 
     Please contact us for any questions: https://www.opencap.ai/#contact
 '''
 
 # %% Directories, paths, and imports. You should not need to change anything.
 import os
+import shutil
 import sys
 
 baseDir = os.path.dirname(os.path.abspath(__file__))
@@ -81,15 +82,19 @@ Please provide:
                     and 'right'.
 '''
 
-# Path to your local opencap-core session results.
+# Path to your local opencap-core session results. These files are used as the
+# source inputs only; results are written to outputDataFolder below.
 localDataFolder = r'C:\Users\wagnerel85475\Documents\opencap-core\Data'
 localSessionDir = os.path.join(localDataFolder,
-                               '23d52d41-69fe-47cf-8b60-838e4268dd50')
+                               '4d5c3eb1-1a59-4ea1-9178-d3634610561c')
+
+# Folder where OpenSimAD will run and write Dynamics results.
+outputDataFolder = os.path.join(baseDir, 'Data')
 
 # Select the trial and simulation settings.
-trial_name = '00b62adc-ceca-4ff1-a1f0-2b688e0f28db'
-motion_type = 'walking'
-time_window = [3.2, 4.7]
+trial_name = '067ae22c-8944-41d5-adad-f8b4c92a47c0'
+motion_type = 'squats'
+time_window = [1.8, 3.6]
 repetition = None
 case = 'local'
 treadmill_speed = 0
@@ -108,23 +113,35 @@ analyzeResults = True
 plotResults = True
 
 # %% Setup.
-# Infer dataFolder and session_id from the local session folder. The OpenSimAD
-# functions expect the same Data/<session_id> layout as example_kinetics.py.
-localSessionDir = os.path.abspath(localSessionDir)
-dataFolder = os.path.dirname(localSessionDir)
-session_id = os.path.basename(localSessionDir)
+# Stage the local session into outputDataFolder. The OpenSimAD functions expect
+# the same Data/<session_id> layout as example_kinetics.py and write results
+# relative to dataFolder.
+sourceSessionDir = os.path.abspath(localSessionDir)
+dataFolder = os.path.abspath(outputDataFolder)
+session_id = os.path.basename(sourceSessionDir)
+localSessionDir = os.path.join(dataFolder, session_id)
+
+sourceMetadata = os.path.join(sourceSessionDir, 'sessionMetadata.yaml')
+sourceKinematics = os.path.join(sourceSessionDir, 'OpenSimData', 'Kinematics',
+                                trial_name + '.mot')
+sourceModelFolder = os.path.join(sourceSessionDir, 'OpenSimData', 'Model')
+
+if not os.path.exists(sourceMetadata):
+    raise FileNotFoundError('Missing local metadata file: ' + sourceMetadata)
+if not os.path.exists(sourceKinematics):
+    raise FileNotFoundError('Missing local kinematics file: ' + sourceKinematics)
+if not os.path.exists(sourceModelFolder):
+    raise FileNotFoundError('Missing local model folder: ' + sourceModelFolder)
 
 pathMetadata = os.path.join(localSessionDir, 'sessionMetadata.yaml')
 pathKinematics = os.path.join(localSessionDir, 'OpenSimData', 'Kinematics',
                               trial_name + '.mot')
 pathModelFolder = os.path.join(localSessionDir, 'OpenSimData', 'Model')
 
-if not os.path.exists(pathMetadata):
-    raise FileNotFoundError('Missing local metadata file: ' + pathMetadata)
-if not os.path.exists(pathKinematics):
-    raise FileNotFoundError('Missing local kinematics file: ' + pathKinematics)
-if not os.path.exists(pathModelFolder):
-    raise FileNotFoundError('Missing local model folder: ' + pathModelFolder)
+os.makedirs(os.path.dirname(pathKinematics), exist_ok=True)
+shutil.copy2(sourceMetadata, pathMetadata)
+shutil.copy2(sourceKinematics, pathKinematics)
+shutil.copytree(sourceModelFolder, pathModelFolder, dirs_exist_ok=True)
 
 settings = processInputsOpenSimAD(baseDir, dataFolder, session_id, trial_name,
                                   motion_type, time_window, repetition,
