@@ -114,7 +114,7 @@ session_id = "4d5c3eb1-1a59-4ea1-9178-d3634610561c"
 case = '0' # Change this to compare across settings.
 # Options are 'squat', 'STS', and 'jump'.
 if session_type == 'overground': 
-    trial_name = 'squat'
+    trial_name = 'DJ'
     if trial_name == 'squat': # Squat
         motion_type = 'squats'
         # repetition = 1
@@ -125,6 +125,9 @@ if session_type == 'overground':
     elif trial_name == 'jump': # Jump  
         motion_type = 'jumping'
         time_window = [1.3, 2.2]
+    elif trial_name == 'DJ': # Drop jump
+        motion_type = 'drop_jump'
+        time_window = [2.5, 4.5]
 # Options are 'walk_1_25ms', 'run_2_5ms', and 'run_4ms'.
 elif session_type == 'treadmill': 
     trial_name = 'walk_1_25ms'

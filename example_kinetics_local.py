@@ -92,9 +92,9 @@ localSessionDir = os.path.join(localDataFolder,
 outputDataFolder = os.path.join(baseDir, 'Data')
 
 # Select the trial and simulation settings.
-trial_name = '067ae22c-8944-41d5-adad-f8b4c92a47c0'
-motion_type = 'squats'
-time_window = [1.8, 3.6]
+trial_name = '7cbe6d6b-dbc0-4e15-b8ca-0e436aa9024c'
+motion_type = 'drop_jump'
+time_window = [2.5, 4.5]
 repetition = None
 case = 'local'
 treadmill_speed = 0

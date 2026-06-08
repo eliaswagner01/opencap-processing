@@ -706,8 +706,9 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
     
     # Paths
     pathGenericTemplates = os.path.join(baseDir, "OpenSimPipeline")
-    pathDummyMotion = os.path.join(pathGenericTemplates, "MuscleAnalysis", 
-                                   'DummyMotion.mot')
+    pathDummyMotion = settings.get(
+        'pathDummyMotion',
+        os.path.join(pathGenericTemplates, "MuscleAnalysis", 'DummyMotion.mot'))
     
     # These are the ranges of motion used to fit the polynomial coefficients.
     # We do not want the experimental data to be out of these ranges. If they
