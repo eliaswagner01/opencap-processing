@@ -84,19 +84,19 @@ Please provide:
 
 # Path to your local opencap-core session results. These files are used as the
 # source inputs only; results are written to outputDataFolder below.
-localDataFolder = r'C:\Users\wagnerel85475\Documents\opencap-core\Data'
+localDataFolder = r'C:\Users\wagnerel85475\Documents\Thesis\opencap-core\Data'
 localSessionDir = os.path.join(localDataFolder,
-                               '4d5c3eb1-1a59-4ea1-9178-d3634610561c')
+                               '3375ffbc-daeb-4a43-b4f7-ac9899cd4c71')
 
 # Folder where OpenSimAD will run and write Dynamics results.
 outputDataFolder = os.path.join(baseDir, 'Data')
 
 # Select the trial and simulation settings.
-trial_name = '7cbe6d6b-dbc0-4e15-b8ca-0e436aa9024c'
-motion_type = 'drop_jump'
-time_window = [2.5, 4.5]
-repetition = None
-case = 'local'
+trial_name = 'a7f0d912-b48e-4293-af31-348e3a3e1300'
+motion_type = 'squat'
+time_window = None
+repetition = 3
+case = 0
 treadmill_speed = 0
 contact_side = 'all'
 
