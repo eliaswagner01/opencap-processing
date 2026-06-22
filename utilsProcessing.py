@@ -26,6 +26,7 @@ sys.path.append(os.path.join(pathFile, 'ActivityAnalyses'))
 import logging
 import opensim
 import numpy as np
+import xml.etree.ElementTree as ET
 from scipy import signal
 import matplotlib.pyplot as plt
 from utils import storage_to_dataframe, download_trial, get_trial_id
@@ -38,6 +39,41 @@ def lowPassFilter(time, data, lowpass_cutoff_frequency, order=4):
     dataFilt = signal.sosfiltfilt(sos, data, axis=0)
 
     return dataFilt
+
+def rotation_matrix_from_frame_fixed_xyz(orientation):
+    cx, cy, cz = np.cos(orientation)
+    sx, sy, sz = np.sin(orientation)
+    rx = np.array([[1, 0, 0], [0, cx, -sx], [0, sx, cx]])
+    ry = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])
+    rz = np.array([[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]])
+    return rx @ ry @ rz
+
+def get_generic_to_femur_rotation(pathModel, side):
+    femur = 'femur_' + side
+    offsetName = femur + '_offset'
+    parentPath = '/bodyset/' + femur
+    try:
+        root = ET.parse(pathModel).getroot()
+    except (ET.ParseError, OSError):
+        return np.eye(3)
+    for frame in root.iter('PhysicalOffsetFrame'):
+        if frame.attrib.get('name') != offsetName:
+            continue
+        socketParent = frame.findtext('socket_parent')
+        if socketParent is None or socketParent.strip() != parentPath:
+            continue
+        orientationText = frame.findtext('orientation')
+        if orientationText is None:
+            return np.eye(3)
+        orientation = np.array(
+            [float(x) for x in orientationText.split()], dtype=float)
+        return rotation_matrix_from_frame_fixed_xyz(orientation)
+    return np.eye(3)
+
+def add_numpy_to_vec3(vec, delta):
+    for i in range(3):
+        vec[i] = float(vec[i] + delta[i])
+    return vec
 
 # %% Segment gait
 def segment_gait(session_id, trial_name, data_folder, gait_cycles_from_end=0):
@@ -193,6 +229,10 @@ def adjust_muscle_wrapping(
     unscaledModel = opensim.Model(pathUnscaledModel)
     scaledModel = opensim.Model(pathScaledModel)    
     scaledBodySet = scaledModel.getBodySet()
+    femurAdjustmentStep_r = get_generic_to_femur_rotation(
+        pathScaledModel, 'r') @ np.array([0, -0.002, 0])
+    femurAdjustmentStep_l = get_generic_to_femur_rotation(
+        pathScaledModel, 'l') @ np.array([0, -0.002, 0])
     
     # Poses that often cause problems.
     pose_gmax = [
@@ -275,10 +315,15 @@ def adjust_muscle_wrapping(
             loc1Vec = point1.get_location()
             point2 = opensim.PathPoint.safeDownCast(pathPoints.get(2))
             loc2Vec = point2.get_location()            
-            originalBadMomentArm = np.copy(momentArm_scaled)                           
-            while np.abs(momentArm_scaled) <= np.max([0.7* np.abs(momentArm_unscaled) , 0.015]) and (np.abs(loc1Vec[0]-original_loc1[0]) < 0.015 and np.abs(loc2Vec[1]-original_loc2[1]) <0.015):
+            originalBadMomentArm = np.copy(momentArm_scaled)
+            femurAdjustment = np.zeros(3)
+            femurAdjustmentSteps = 0
+            while np.abs(momentArm_scaled) <= np.max([0.7* np.abs(momentArm_unscaled) , 0.015]) and (np.abs(loc1Vec[0]-original_loc1[0]) < 0.015 and np.linalg.norm(femurAdjustment) < 0.015):
                 loc1Vec[0] += 0.002 # Move the 1st (pelvis) path point forward
-                loc2Vec[1] -= 0.002 # move the 2nd (femur) path point down
+                femurAdjustment += femurAdjustmentStep_r
+                femurAdjustmentSteps += 1
+                loc2Vec = add_numpy_to_vec3(
+                    loc2Vec, femurAdjustmentStep_r)
                 point1.set_location(loc1Vec)
                 point2.set_location(loc2Vec)        
                 momentArm_scaled = getMomentArms(scaledModel,pose_hipFlexors,'iliacus_r',coord_hipFlexors)[iPose]          
@@ -297,7 +342,8 @@ def adjust_muscle_wrapping(
                 point1.set_location(loc1Vec_l)                
                 point2 = opensim.PathPoint.safeDownCast(pathPoints.get(2))
                 loc2Vec_l = point2.get_location()
-                loc2Vec_l[1] = loc2Vec[1]
+                loc2Vec_l = add_numpy_to_vec3(
+                    loc2Vec_l, femurAdjustmentSteps * femurAdjustmentStep_l)
                 point2.set_location(loc2Vec_l)                
                 if radius<previousRadius:
                     radiusStr = ', and after moving points by 1.5±0.2cm wasn''t enough, reduced R&L iliacus wrap radius from {:.3f} to {:.3f}'.format(
@@ -307,8 +353,8 @@ def adjust_muscle_wrapping(
                 else:
                     radiusStr = ''
                 previousRadius = np.copy(radius)    
-                outputStr = '-For pose #{}, moved iliacus pelvis path point xpos forward from {:.3f} to {:.3f}, and femur iliacus path point ypos down from {:.3f} to {:.3f}'.format(
-                    iPose,original_loc1[0],loc1Vec[0],original_loc2[1],loc2Vec[1]) + radiusStr + '. Restored moment arm from {:.3f} to {:.3f}.'.format(
+                outputStr = '-For pose #{}, moved iliacus pelvis path point xpos forward from {:.3f} to {:.3f}, and transformed femur iliacus path point by [{:.3f}, {:.3f}, {:.3f}]'.format(
+                    iPose,original_loc1[0],loc1Vec[0],femurAdjustment[0],femurAdjustment[1],femurAdjustment[2]) + radiusStr + '. Restored moment arm from {:.3f} to {:.3f}.'.format(
                       originalBadMomentArm,momentArm_scaled)
                 print(outputStr)
                 logging.info(outputStr)
@@ -355,10 +401,15 @@ def adjust_muscle_wrapping(
             loc1Vec = point1.get_location()
             point2 = opensim.PathPoint.safeDownCast(pathPoints.get(2))
             loc2Vec = point2.get_location()
-            originalBadMomentArm = np.copy(momentArm_scaled)               
-            while np.abs(momentArm_scaled) <= np.max([0.7* np.abs(momentArm_unscaled), 0.015]) and (np.abs(loc1Vec[0]-original_loc1[0]) < 0.015 and np.abs(loc2Vec[1]-original_loc2[1]) < 0.015):
+            originalBadMomentArm = np.copy(momentArm_scaled)
+            femurAdjustment = np.zeros(3)
+            femurAdjustmentSteps = 0
+            while np.abs(momentArm_scaled) <= np.max([0.7* np.abs(momentArm_unscaled), 0.015]) and (np.abs(loc1Vec[0]-original_loc1[0]) < 0.015 and np.linalg.norm(femurAdjustment) < 0.015):
                 loc1Vec[0] += 0.002 # Move the 1st (pelvis) path point forward
-                loc2Vec[1] -= 0.002 # move the 2nd (femur) path point down
+                femurAdjustment += femurAdjustmentStep_r
+                femurAdjustmentSteps += 1
+                loc2Vec = add_numpy_to_vec3(
+                    loc2Vec, femurAdjustmentStep_r)
                 point1.set_location(loc1Vec)
                 point2.set_location(loc2Vec)        
                 momentArm_scaled = getMomentArms(scaledModel,pose_hipFlexors,'psoas_r',coord_hipFlexors)[iPose]            
@@ -377,7 +428,8 @@ def adjust_muscle_wrapping(
                 point1.set_location(loc1Vec_l)
                 point2 = opensim.PathPoint.safeDownCast(pathPoints.get(2))
                 loc2Vec_l = point2.get_location()
-                loc2Vec_l[1] = loc2Vec[1]
+                loc2Vec_l = add_numpy_to_vec3(
+                    loc2Vec_l, femurAdjustmentSteps * femurAdjustmentStep_l)
                 point2.set_location(loc2Vec_l)
                 if radius<previousRadius:
                     radiusStr = ', and after moving points by 1.5±0.2cm wasn''t enough, reduced R&L psoas wrap radius from {:.3f} to {:.3f}'.format(
@@ -387,8 +439,8 @@ def adjust_muscle_wrapping(
                 else:
                     radiusStr = ''
                 previousRadius = np.copy(radius)   
-                outputStr = '-For pose #{}, moved psoas pelvis path point xpos forward from {:.3f} to {:.3f}, and femur psoas path point ypos down from {:.3f} to {:.3f}'.format(
-                    iPose,original_loc1[0],loc1Vec[0],original_loc2[1],loc2Vec[1]) + radiusStr + '. Restored moment arm from {:.3f} to {:.3f}.'.format(
+                outputStr = '-For pose #{}, moved psoas pelvis path point xpos forward from {:.3f} to {:.3f}, and transformed femur psoas path point by [{:.3f}, {:.3f}, {:.3f}]'.format(
+                    iPose,original_loc1[0],loc1Vec[0],femurAdjustment[0],femurAdjustment[1],femurAdjustment[2]) + radiusStr + '. Restored moment arm from {:.3f} to {:.3f}.'.format(
                       originalBadMomentArm,momentArm_scaled)
                 print(outputStr)
                 logging.info(outputStr)                   
