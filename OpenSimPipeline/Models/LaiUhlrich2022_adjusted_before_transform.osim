@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40500">
-	<Model name="LaiUhlrich2022_adjusted_transform">
+	<Model name="LaiUhlrich2022_adjusted">
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
 			<!--The geometry used to display the axes of this Frame.-->
@@ -736,9 +736,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>11.111751197950543</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0.62855410698270853 0.43963818658601578 0.72836746415721287</mass_center>
+					<mass_center>0 -0.15542316308049375 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.14042722597650834 0.13362591635065385 0.03569565190298124 -0.0016645734373549092 -0.00568190598522681 -0.0057017151316356542</inertia>
+					<inertia>0.13370523387303743 0.035048944801670014 0.14099461555543605 0 0 0</inertia>
 				</Body>
 				<Body name="tibia_r">
 					<!--The geometry used to display the axes of this Frame.-->
@@ -1481,9 +1481,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>11.111751197950543</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0.45621364839067674 0.45123780912117784 0.72813370341950368</mass_center>
+					<mass_center>0 -0.15556561912034392 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.14020741039046822 0.13369816830249076 0.036411287988805094 0.0005922958527458898 0.010464621316113429 -0.0049652713525200828</inertia>
+					<inertia>0.13395044632072278 0.03511322379281083 0.14125319656823046 0 0 0</inertia>
 				</Body>
 				<Body name="tibia_l">
 					<!--The geometry used to display the axes of this Frame.-->
