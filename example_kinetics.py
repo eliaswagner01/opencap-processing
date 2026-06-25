@@ -267,6 +267,8 @@ for trial_name in trial_names:
                                       repetition, treadmill_speed,
                                       contact_side)
 
+    continue
+
     # %% Simulation.
     run_tracking(baseDir, dataFolder, session_id, settings, case=case,
                  solveProblem=solveProblem,
