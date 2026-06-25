@@ -164,23 +164,23 @@ trial_settings = {
         'contact_side': 'all'
     },
     'sit-to-stand1': {
-        'motion_type': 'sit-to-stand',
-        'time_window': [],
-        'repetition': 0,
+        'motion_type': 'sit_to_stand',
+        'time_window': [0.6, 2.2],
+        'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'sit-to-stand2': {
-        'motion_type': 'sit-to-stand',
-        'time_window': [],
-        'repetition': 0,
+        'motion_type': 'sit_to_stand',
+        'time_window': [1.2, 2.8],
+        'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'sit-to-stand3': {
-        'motion_type': 'sit-to-stand',
-        'time_window': [],
-        'repetition': 0,
+        'motion_type': 'sit_to_stand',
+        'time_window': [0.9, 2.6],
+        'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
@@ -240,6 +240,11 @@ analyzeResults = True
 # Set to True to plot results.
 plotResults = True
 
+# Set to True to only generate the OpenSimAD model/contact/expression graph
+# functions needed later by run_tracking. This skips the optimization and also
+# skips repetition auto-segmentation for squats/sit-to-stand trials.
+generateFunctionsOnly = True
+
 # Path to where you want the data to be downloaded.
 dataFolder = os.path.join(baseDir, 'Data')
 
@@ -262,12 +267,23 @@ for trial_name in trial_names:
           'repetition={}'.format(
               trial_name, motion_type, time_window, repetition))
 
+    setup_repetition = None if generateFunctionsOnly else repetition
     settings = processInputsOpenSimAD(baseDir, dataFolder, session_id,
                                       trial_name, motion_type, time_window,
-                                      repetition, treadmill_speed,
+                                      setup_repetition, treadmill_speed,
                                       contact_side)
 
-    continue
+    if generateFunctionsOnly:
+        model_folder = os.path.join(dataFolder, session_id, 'OpenSimData',
+                                    'Model')
+        trial_model_folder = os.path.join(model_folder, trial_name)
+        if os.path.exists(trial_model_folder):
+            model_folder = trial_model_folder
+        external_function_folder = os.path.join(model_folder,
+                                                'ExternalFunction')
+        print('Generated functions are saved in: {}'.format(
+            external_function_folder))
+        continue
 
     # %% Simulation.
     run_tracking(baseDir, dataFolder, session_id, settings, case=case,
