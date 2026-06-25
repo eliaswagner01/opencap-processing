@@ -43,6 +43,7 @@ if opensimADDir not in sys.path:
 
 from UtilsDynamicSimulations.OpenSimAD.utilsOpenSimAD import processInputsOpenSimAD, plotResultsOpenSimAD
 from UtilsDynamicSimulations.OpenSimAD.mainOpenSimAD import run_tracking
+from utils import download_kinematics
 
 # %% User inputs.
 '''
@@ -107,47 +108,126 @@ simulations converged to kinematic solutions that were visually reasonable.
 Please contact us for any questions: https://www.opencap.ai/#contact
 '''
 
-# We provide a few examples for overground and treadmill activities.
-# Select which example you would like to run.
-session_type = 'overground' # Options are 'overground' and 'treadmill'.
 session_id = "3375ffbc-daeb-4a43-b4f7-ac9899cd4c71"
 case = '0' # Change this to compare across settings.
-# Options are 'squat', 'STS', and 'jump'.
-if session_type == 'overground': 
-    trial_name = 'squat1'
-    if trial_name == 'squat1': # Squat
-        motion_type = 'squats'
-        repetition = 0
-        time_window = [1.8, 3.6]
-    elif trial_name == 'STS': # Sit-to-stand        
-        motion_type = 'sit_to_stand'
-        repetition = 1
-    elif trial_name == 'jump': # Jump  
-        motion_type = 'jumping'
-        time_window = [1.3, 2.2]
-    elif trial_name == 'DJ': # Drop jump
-        motion_type = 'drop_jump'
-        time_window = [2.5, 4.5]
-# Options are 'walk_1_25ms', 'run_2_5ms', and 'run_4ms'.
-elif session_type == 'treadmill': 
-    trial_name = 'walk_1_25ms'
-    torque_driven_model = False # Example with torque-driven model.
-    if trial_name == 'walk_1_25ms': # Walking, 1.25 m/s
-        motion_type = 'walking'
-        time_window = [1.0, 2.5]
-        treadmill_speed = 1.25
-    elif trial_name == 'run_2_5ms': # Running, 2.5 m/s
-        if torque_driven_model:
-            motion_type = 'running_torque_driven'
-        else:
-            motion_type = 'running'
-        time_window = [1.4, 2.6]
-        treadmill_speed = 2.5
-    elif trial_name == 'run_4ms': # Running with periodic constraints, 4.0 m/s
-        motion_type = 'my_periodic_running'
-        time_window = [3.1833333, 3.85]
-        treadmill_speed = 4.0
-    
+
+# Specify trial names in a list; use None to process all trials in a session.
+# These are the trials currently listed in:
+# C:\Users\wagnerel85475\Documents\Thesis\opencap-core\Data\3375ffbc-daeb-4a43-b4f7-ac9899cd4c71\OpenSimData\Kinematics
+specific_trial_names = [
+    'drop-jump1',
+    'drop-jump2',
+    'drop-jump3',
+    'sit-to-stand1',
+    'sit-to-stand2',
+    'sit-to-stand3',
+    'squat1',
+    'squat2',
+    'squat3',
+    'walk1',
+    'walk2',
+    'walk3',
+]
+
+# Default settings used for any trial that is not listed in trial_settings.
+# Set motion_type to the best match for your session before running.
+default_trial_settings = {
+    'motion_type': 'drop_jump',
+    'time_window': [],
+    'repetition': None,
+    'treadmill_speed': 0,
+    'contact_side': 'all',
+}
+
+# Per-trial settings. Leave time_window as [] and repetition as None until you
+# define the window or repetition you want for each trial.
+trial_settings = {
+    'drop-jump1': {
+        'motion_type': 'drop_jump',
+        'time_window': [],
+        'repetition': 0,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'drop-jump2': {
+        'motion_type': 'drop_jump',
+        'time_window': [],
+        'repetition': 0,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'drop-jump3': {
+        'motion_type': 'drop_jump',
+        'time_window': [],
+        'repetition': 0,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'sit-to-stand1': {
+        'motion_type': 'sit-to-stand',
+        'time_window': [],
+        'repetition': 0,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'sit-to-stand2': {
+        'motion_type': 'sit-to-stand',
+        'time_window': [],
+        'repetition': 0,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'sit-to-stand3': {
+        'motion_type': 'sit-to-stand',
+        'time_window': [],
+        'repetition': 0,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'squat1': {
+        'motion_type': 'squats',
+        'time_window': [],
+        'repetition': 0,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'squat2': {
+        'motion_type': 'squats',
+        'time_window': [],
+        'repetition': 2,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'squat3': {
+        'motion_type': 'squats',
+        'time_window': [],
+        'repetition': 3,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'walk1': {
+        'motion_type': 'walking',
+        'time_window': [4.3, 5.3],
+        'repetition': None,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'walk2': {
+        'motion_type': 'walking',
+        'time_window': [8.5, 9.6],
+        'repetition': None,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+    'walk3': {
+        'motion_type': 'walking',
+        'time_window': [9.3, 10.3],
+        'repetition': None,
+        'treadmill_speed': 0,
+        'contact_side': 'all'
+    },
+}
+
 # Set to True to solve the optimal control problem.
 solveProblem = True
 # Set to True to analyze the results of the optimal control problem. If you
@@ -157,26 +237,43 @@ solveProblem = True
 # re-run the problem.
 analyzeResults = True
 
+# Set to True to plot results.
+plotResults = True
+
 # Path to where you want the data to be downloaded.
 dataFolder = os.path.join(baseDir, 'Data')
 
 # %% Setup. 
-if not 'time_window' in locals():
-    time_window = None
-if not 'repetition' in locals():
-    repetition = None
-if not 'treadmill_speed' in locals():
-    treadmill_speed = 0
-if not 'contact_side' in locals():
-    contact_side = 'all'
-settings = processInputsOpenSimAD(baseDir, dataFolder, session_id, trial_name, 
-                                  motion_type, time_window, repetition,
-                                  treadmill_speed, contact_side)
+sessionFolder = os.path.join(dataFolder, session_id)
+trial_names, _ = download_kinematics(session_id, folder=sessionFolder,
+                                     trialNames=specific_trial_names)
 
-# %% Simulation.
-run_tracking(baseDir, dataFolder, session_id, settings, case=case, 
-              solveProblem=solveProblem, analyzeResults=analyzeResults)
+for trial_name in trial_names:
+    settings_for_trial = default_trial_settings.copy()
+    settings_for_trial.update(trial_settings.get(trial_name, {}))
 
-# %% Plots.
-# To compare different cases, add to the cases list, eg cases=['0','1'].
-plotResultsOpenSimAD(dataFolder, session_id, trial_name, settings, cases=[case])
+    motion_type = settings_for_trial['motion_type']
+    time_window = settings_for_trial['time_window']
+    repetition = settings_for_trial['repetition']
+    treadmill_speed = settings_for_trial['treadmill_speed']
+    contact_side = settings_for_trial['contact_side']
+
+    print('Processing trial {} with motion_type={}, time_window={}, '
+          'repetition={}'.format(
+              trial_name, motion_type, time_window, repetition))
+
+    settings = processInputsOpenSimAD(baseDir, dataFolder, session_id,
+                                      trial_name, motion_type, time_window,
+                                      repetition, treadmill_speed,
+                                      contact_side)
+
+    # %% Simulation.
+    run_tracking(baseDir, dataFolder, session_id, settings, case=case,
+                 solveProblem=solveProblem,
+                 analyzeResults=analyzeResults)
+
+    # %% Plots.
+    # To compare different cases, add to the cases list, eg cases=['0','1'].
+    if plotResults:
+        plotResultsOpenSimAD(dataFolder, session_id, trial_name, settings,
+                             cases=[case])
