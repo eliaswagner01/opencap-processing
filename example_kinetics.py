@@ -109,24 +109,15 @@ Please contact us for any questions: https://www.opencap.ai/#contact
 '''
 
 session_id = "3375ffbc-daeb-4a43-b4f7-ac9899cd4c71"
-case = '0' # Change this to compare across settings.
+case = 'nonperiodic' # Change this to compare across settings.
 
 # Specify trial names in a list; use None to process all trials in a session.
 # These are the trials currently listed in:
 # C:\Users\wagnerel85475\Documents\Thesis\opencap-core\Data\3375ffbc-daeb-4a43-b4f7-ac9899cd4c71\OpenSimData\Kinematics
 specific_trial_names = [
-    'drop-jump1',
-    'drop-jump2',
-    'drop-jump3',
     'sit-to-stand1',
     'sit-to-stand2',
     'sit-to-stand3',
-    'squat1',
-    'squat2',
-    'squat3',
-    'walk1',
-    'walk2',
-    'walk3',
 ]
 
 # Default settings used for any trial that is not listed in trial_settings.
@@ -142,86 +133,72 @@ default_trial_settings = {
 # Per-trial settings. Leave time_window as [] and repetition as None until you
 # define the window or repetition you want for each trial.
 trial_settings = {
-    'drop-jump1': {
-        'motion_type': 'drop_jump',
-        'time_window': [],
-        'repetition': 0,
-        'treadmill_speed': 0,
-        'contact_side': 'all'
-    },
     'drop-jump2': {
         'motion_type': 'drop_jump',
-        'time_window': [],
-        'repetition': 0,
+        'time_window': [2.45, 3.7],
+        'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'drop-jump3': {
         'motion_type': 'drop_jump',
-        'time_window': [],
-        'repetition': 0,
+        'time_window': [2.3, 3.8],
+        'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'sit-to-stand1': {
         'motion_type': 'sit_to_stand',
-        'time_window': [0.6, 2.2],
+        'time_window': [1.0, 2.4],
         'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'sit-to-stand2': {
         'motion_type': 'sit_to_stand',
-        'time_window': [1.2, 2.8],
+        'time_window': [1.5, 2.9],
         'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'sit-to-stand3': {
         'motion_type': 'sit_to_stand',
-        'time_window': [0.9, 2.6],
+        'time_window': [1.2, 2.7],
         'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'squat1': {
         'motion_type': 'squats',
-        'time_window': [],
-        'repetition': 0,
+        'time_window': [1.5, 4.0],
+        'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'squat2': {
         'motion_type': 'squats',
-        'time_window': [],
-        'repetition': 2,
-        'treadmill_speed': 0,
-        'contact_side': 'all'
-    },
-    'squat3': {
-        'motion_type': 'squats',
-        'time_window': [],
-        'repetition': 3,
+        'time_window': [6.4, 8.5],
+        'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'walk1': {
         'motion_type': 'walking',
-        'time_window': [4.3, 5.3],
+        'time_window': [3.8, 5.2],
         'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'walk2': {
         'motion_type': 'walking',
-        'time_window': [8.5, 9.6],
+        'time_window': [9.25, 10.7],
         'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
     },
     'walk3': {
         'motion_type': 'walking',
-        'time_window': [9.3, 10.3],
+        'time_window': [9.95, 11.5],
         'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'
@@ -238,12 +215,12 @@ solveProblem = True
 analyzeResults = True
 
 # Set to True to plot results.
-plotResults = True
+plotResults = False
 
 # Set to True to only generate the OpenSimAD model/contact/expression graph
 # functions needed later by run_tracking. This skips the optimization and also
 # skips repetition auto-segmentation for squats/sit-to-stand trials.
-generateFunctionsOnly = True
+generateFunctionsOnly = False
 
 # Path to where you want the data to be downloaded.
 dataFolder = os.path.join(baseDir, 'Data')
@@ -272,6 +249,9 @@ for trial_name in trial_names:
                                       trial_name, motion_type, time_window,
                                       setup_repetition, treadmill_speed,
                                       contact_side)
+
+    if motion_type == 'sit_to_stand':
+        settings.pop('periodicConstraints', None)
 
     if generateFunctionsOnly:
         model_folder = os.path.join(dataFolder, session_id, 'OpenSimData',
