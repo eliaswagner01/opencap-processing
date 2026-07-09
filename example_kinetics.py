@@ -109,15 +109,16 @@ Please contact us for any questions: https://www.opencap.ai/#contact
 '''
 
 session_id = "3375ffbc-daeb-4a43-b4f7-ac9899cd4c71"
-case = 'nonperiodic' # Change this to compare across settings.
+case = 'hipFlexion' # Change this to compare across settings.
 
 # Specify trial names in a list; use None to process all trials in a session.
 # These are the trials currently listed in:
 # C:\Users\wagnerel85475\Documents\Thesis\opencap-core\Data\3375ffbc-daeb-4a43-b4f7-ac9899cd4c71\OpenSimData\Kinematics
 specific_trial_names = [
-    'sit-to-stand1',
-    'sit-to-stand2',
-    'sit-to-stand3',
+    'squat1',
+    'squat2',
+    'drop-jump2',
+    'drop-jump3',
 ]
 
 # Default settings used for any trial that is not listed in trial_settings.
@@ -220,7 +221,7 @@ plotResults = False
 # Set to True to only generate the OpenSimAD model/contact/expression graph
 # functions needed later by run_tracking. This skips the optimization and also
 # skips repetition auto-segmentation for squats/sit-to-stand trials.
-generateFunctionsOnly = False
+generateFunctionsOnly = True
 
 # Path to where you want the data to be downloaded.
 dataFolder = os.path.join(baseDir, 'Data')
