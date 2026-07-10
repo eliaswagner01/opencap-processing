@@ -24,7 +24,8 @@ import glob
 
 #%% Compute knee adduction moments.
 def computeKAM(pathGenericTemplates, outputDir, modelPath, IDPath, IKPath,
-               GRFPath, grfType, contactSides, contactSpheres={}, Qds=[]):
+               GRFPath, grfType, contactSides, contactSpheres={}, Qds=[],
+               outputFileSuffix=None):
     
     print('Computing knee adduction moments.\n')
 
@@ -214,7 +215,10 @@ def computeKAM(pathGenericTemplates, outputDir, modelPath, IDPath, IKPath,
     jointReaction = opensim.JointReaction(jointReactionXmlPath)
     model.addAnalysis(jointReaction) ;
     jointReaction.setModel(model) ;
-    jointReaction.printToXML(os.path.join(outputDir, 'JrxnSetup.xml')) ;    
+    setupFileName = 'JrxnSetup.xml'
+    if outputFileSuffix:
+        setupFileName = 'JrxnSetup_JRA_{}.xml'.format(outputFileSuffix)
+    jointReaction.printToXML(os.path.join(outputDir, setupFileName)) ;    
     
     # Loop over time.
     controls = opensim.Vector(nCoords,0) ;
@@ -263,6 +267,8 @@ def computeKAM(pathGenericTemplates, outputDir, modelPath, IDPath, IKPath,
     if not removeSpheres:
         grfType = 'spheresUsed_noGRFsApplied'
     outFileBase = 'results_JRA'
+    if outputFileSuffix:
+        outFileBase = '{}_{}'.format(outFileBase, outputFileSuffix)
     jointReaction.printResults(outFileBase,outputDir,-1,'.sto')
     
     # Load and get KAM.
@@ -292,7 +298,8 @@ def computeMCF(pathGenericTemplates, outputDir, modelPath, activationsPath,
                IKPath, GRFPath, grfType, contactSides, contactSpheres={},
                muscleForceFilePath=None, 
                pathReserveGeneralizedForces=None, Qds=[],pathJRAResults=None, 
-               replaceMuscles=False, visualize=False, debugMode=False):
+               replaceMuscles=False, visualize=False, debugMode=False,
+               outputFileSuffix=None):
     
     print('Computing medial knee contact forces.\n')
     
@@ -546,7 +553,11 @@ def computeMCF(pathGenericTemplates, outputDir, modelPath, activationsPath,
         jointReaction = opensim.JointReaction(jointReactionXmlPath)
         model.addAnalysis(jointReaction) ;
         jointReaction.setModel(model) ;
-        jointReaction.printToXML(os.path.join(outputDir, 'JrxnSetup.xml')) ;
+        setupFileName = 'JrxnSetup.xml'
+        if outputFileSuffix:
+            setupFileName = 'JrxnSetup_JRAforMCF_{}.xml'.format(
+                outputFileSuffix)
+        jointReaction.printToXML(os.path.join(outputDir, setupFileName)) ;
         
         endTime = []
         if usingGenForceActuators:
@@ -630,6 +641,8 @@ def computeMCF(pathGenericTemplates, outputDir, modelPath, activationsPath,
         if not removeSpheres:
             grfType = 'spheresUsed_noGRFsApplied'
         outFileBase = 'results_JRAforMCF'
+        if outputFileSuffix:
+            outFileBase = '{}_{}'.format(outFileBase, outputFileSuffix)
         jointReaction.printResults(outFileBase,outputDir,-1,'.sto')        
         
         # Get filename.

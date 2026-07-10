@@ -171,7 +171,7 @@ trial_settings = {
     },
     'squat1': {
         'motion_type': 'squats',
-        'time_window': [1.5, 4.0],
+        'time_window': [1.5, 3.8],
         'repetition': None,
         'treadmill_speed': 0,
         'contact_side': 'all'

@@ -2523,7 +2523,8 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
                                IKPath, GRFPath, grfType='sphere',
                                contactSides=contactSides,
                                contactSpheres=contactSpheres,
-                               Qds=Qds_opt_nsc.T)
+                               Qds=Qds_opt_nsc.T,
+                               outputFileSuffix=case)
             KAM = np.concatenate(
                 (np.expand_dims(c_KAM['KAM_r'], axis=1),
                  np.expand_dims(c_KAM['KAM_l'], axis=1)), axis=1).T              
@@ -2627,7 +2628,8 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
                                muscleForceFilePath=forcePath,
                                pathReserveGeneralizedForces=forcePath,
                                Qds=Qds_opt_nsc.T,
-                               replaceMuscles=True)
+                               replaceMuscles=True,
+                               outputFileSuffix=case)
             MCF = np.concatenate(
                 (np.expand_dims(c_MCF['MCF_r'], axis=1),
                  np.expand_dims(c_MCF['MCF_l'], axis=1)), axis=1).T
