@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<JointReaction name="JointReactionAnalysisParent">
+		<on>true</on>
+		<start_time>1</start_time>
+		<end_time>Inf</end_time>
+		<step_interval>1</step_interval>
+		<in_degrees>true</in_degrees>
+		<forces_file />
+		<joint_names> all </joint_names>
+		<apply_on_bodies> parent</apply_on_bodies>
+		<express_in_frame> parent</express_in_frame>
+	</JointReaction>
+</OpenSimDocument>

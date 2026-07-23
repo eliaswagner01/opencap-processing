@@ -36,7 +36,8 @@ import pandas as pd
 # %% Settings.
 def run_tracking(baseDir, dataDir, subject, settings, case='0',
                  solveProblem=True, analyzeResults=True, writeGUI=True,
-                 computeKAM=True, computeMCF=True):
+                 computeKAM=True, computeMCF=True,
+                 outputParentFrameJRA=False):
     
     # %% Settings.
     # Most available settings are left from trying out different formulations 
@@ -2629,7 +2630,8 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
                                pathReserveGeneralizedForces=forcePath,
                                Qds=Qds_opt_nsc.T,
                                replaceMuscles=True,
-                               outputFileSuffix=case)
+                               outputFileSuffix=case,
+                               outputParentFrameJRA=outputParentFrameJRA)
             MCF = np.concatenate(
                 (np.expand_dims(c_MCF['MCF_r'], axis=1),
                  np.expand_dims(c_MCF['MCF_l'], axis=1)), axis=1).T

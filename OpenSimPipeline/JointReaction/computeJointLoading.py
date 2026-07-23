@@ -299,7 +299,7 @@ def computeMCF(pathGenericTemplates, outputDir, modelPath, activationsPath,
                muscleForceFilePath=None, 
                pathReserveGeneralizedForces=None, Qds=[],pathJRAResults=None, 
                replaceMuscles=False, visualize=False, debugMode=False,
-               outputFileSuffix=None):
+               outputFileSuffix=None, outputParentFrameJRA=False):
     
     print('Computing medial knee contact forces.\n')
     
@@ -558,6 +558,23 @@ def computeMCF(pathGenericTemplates, outputDir, modelPath, activationsPath,
             setupFileName = 'JrxnSetup_JRAforMCF_{}.xml'.format(
                 outputFileSuffix)
         jointReaction.printToXML(os.path.join(outputDir, setupFileName)) ;
+
+        jointReactionParent = None
+        if outputParentFrameJRA:
+            parentJointReactionXmlPath = os.path.join(
+                pathGenericTemplates, 'JointReaction',
+                'Setup_JointReaction_Parent.xml')
+            jointReactionParent = opensim.JointReaction(
+                parentJointReactionXmlPath)
+            model.addAnalysis(jointReactionParent)
+            jointReactionParent.setModel(model)
+            parentSetupFileName = 'JrxnSetup_JRAforMCF_parent.xml'
+            if outputFileSuffix:
+                parentSetupFileName = (
+                    'JrxnSetup_JRAforMCF_{}_parent.xml'.format(
+                        outputFileSuffix))
+            jointReactionParent.printToXML(
+                os.path.join(outputDir, parentSetupFileName))
         
         endTime = []
         if usingGenForceActuators:
@@ -631,11 +648,17 @@ def computeMCF(pathGenericTemplates, outputDir, modelPath, activationsPath,
                 
             # Compute JRA
             if iTime == 0:
-                jointReaction.begin(state) 
+                jointReaction.begin(state)
+                if jointReactionParent is not None:
+                    jointReactionParent.begin(state)
             else:
-                jointReaction.step(state,iTime) 
+                jointReaction.step(state,iTime)
+                if jointReactionParent is not None:
+                    jointReactionParent.step(state, iTime)
             if iTime == len(stateTime)-1 or thisTime >= endTime:
                 jointReaction.end(state)
+                if jointReactionParent is not None:
+                    jointReactionParent.end(state)
         
         # Finish time loop and output.
         if not removeSpheres:
@@ -643,7 +666,11 @@ def computeMCF(pathGenericTemplates, outputDir, modelPath, activationsPath,
         outFileBase = 'results_JRAforMCF'
         if outputFileSuffix:
             outFileBase = '{}_{}'.format(outFileBase, outputFileSuffix)
-        jointReaction.printResults(outFileBase,outputDir,-1,'.sto')        
+        jointReaction.printResults(outFileBase,outputDir,-1,'.sto')
+        if jointReactionParent is not None:
+            parentOutFileBase = '{}_parent'.format(outFileBase)
+            jointReactionParent.printResults(
+                parentOutFileBase, outputDir, -1, '.sto')
         
         # Get filename.
         pathJRAResults = glob.glob(os.path.join(outputDir,outFileBase + '_JointReactionAnalysis_ReactionLoads.sto'))[0]
